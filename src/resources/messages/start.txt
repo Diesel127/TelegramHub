@@ -1,0 +1,10 @@
+*Hi!* 🖐
+
+*OpenAI* Telegram Bot combines the convenience of *Telegram* with the power of *ChatGPT* 💪
+
+*Useful commands and links:*
+• /start – Main menu
+• /random – Get a random fact
+• /gpt – Ask ChatGPT
+• /talk – Talk with a famous personality
+• /quiz – Test your knowledge
