@@ -21,8 +21,12 @@ async def send_text(update: Update, context: ContextTypes.DEFAULT_TYPE, text: st
     )
 
 
-# send_image function was extended to get right path for quiz images in nested folders
 async def send_image(update, context, name: str, folder: str | None = None):
+    """
+    Send an image to the chat.
+    Builds the image path from the project directory and sends the specified
+    `.jpg` file to the current chat. Supports optional subfolders images.
+    """
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     if folder:

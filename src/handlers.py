@@ -5,8 +5,8 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 
 from src.constants import CLOSE_BUTTON
+
 from src.gpt import chatgpt_service, gpt
-from src.quiz_data import QUIZ_DATA
 from src.talk_data import talk
 from utils import (send_image, send_text, load_message, show_main_menu, load_prompt, send_text_buttons)
 
@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 
 
 async def close_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+        close_button is needed to exit the current mode and return the user to the main menu.
+    """
     query = update.callback_query
     await query.answer()
     context.user_data.clear()
@@ -35,7 +38,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "random": "Get a random fact",
             "gpt": "Ask ChatGPT",
             "talk": "Talk with a famous person",
-            "quiz": "Test your knowledge"
+            "quiz": "Test your knowledge",
+            "english": "Unscramble the word"
         }
     )
 
@@ -102,79 +106,6 @@ async def talk_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-async def quiz(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data.clear()
-    context.user_data["conversation_state"] = "quiz"
-    context.user_data["quiz_index"] = 0
-
-    await send_quiz_question(update, context)
-
-
-async def send_quiz_question(update, context):
-    idx = context.user_data.get("quiz_index", 0)
-
-    if idx >= len(QUIZ_DATA):
-        await send_text(update, context, "Quiz finished.")
-        await start(update, context)
-        return
-
-    quiz_item = QUIZ_DATA[idx]
-
-    # картинка
-    await send_image(update, context, quiz_item["image"], folder="quiz_imgs")
-
-    # inline keyboard: 1 вариант = 1 строка
-    keyboard = []
-
-    for option in quiz_item["options"]:
-        keyboard.append([
-            InlineKeyboardButton(
-                text=option,
-                callback_data=f"quiz_answer:{option}"
-            )
-        ])
-
-    # нижняя строка
-    keyboard.append([
-        InlineKeyboardButton("Next", callback_data="quiz_next"),
-        InlineKeyboardButton("Close", callback_data="start"),
-    ])
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=quiz_item["question"],
-        reply_markup=reply_markup
-    )
-
-
-async def quiz_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-
-    data = query.data
-
-    # answer of quiz question
-    if data.startswith("quiz_answer:"):
-        selected = data.split(":")[1]
-        idx = context.user_data["quiz_index"]
-        correct = QUIZ_DATA[idx]["correct"]
-
-        if selected == correct:
-            await query.message.reply_text("✅ Correct")
-        else:
-            await query.message.reply_text(f"❌ Wrong. Correct: {correct}")
-
-        return
-
-    # next question
-    if data == "quiz_next":
-        context.user_data["quiz_index"] += 1
-        await send_quiz_question(update, context)
-        return
-
-
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_text = update.message.text
     conversation_state = context.user_data.get("conversation_state")
@@ -194,7 +125,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=update.effective_chat.id,
                 message_id=waiting_message.message_id
             )
-    if conversation_state == "talk":
+    elif conversation_state == "talk":
         personality = context.user_data.get("selected_personality")
         if personality:
             prompt = load_prompt(personality)
@@ -217,6 +148,35 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=update.effective_chat.id,
                 message_id=waiting_message.message_id
             )
+    elif conversation_state == "english":
+        """
+        Handle user input for the English word game.
+        Treats the user's message as a guess, checks it against the correct word,
+        and immediately responds with feedback. Provides "Next" and "Close" buttons
+        for further actions.
+        """
+        user_input = update.message.text.strip().lower()
+        correct = context.user_data.get("english_word", "").lower().strip()
+
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("Next", callback_data="eng_next"),
+                InlineKeyboardButton("Close", callback_data="start"),
+            ]
+        ])
+
+        if user_input == correct:
+            await update.message.reply_text(
+                "✅ Correct!",
+                reply_markup=keyboard
+            )
+        else:
+            await update.message.reply_text(
+                f"❌ Wrong. Correct word: *{correct}*",
+                parse_mode="Markdown",
+                reply_markup=keyboard
+            )
+        return
     if not conversation_state:
         intent_recognized = await inter_random_input(update, context, message_text)
         if not intent_recognized:

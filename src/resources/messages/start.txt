@@ -8,3 +8,4 @@
 • /gpt – Ask ChatGPT
 • /talk – Talk with a famous personality
 • /quiz – Test your knowledge
+• /english – Unscramble the word
