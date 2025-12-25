@@ -11,16 +11,8 @@ A versatile Telegram bot that integrates with OpenAI's ChatGPT to provide variou
 - **Random Fact Generator** - Get interesting facts with AI-generated content
 - **ChatGPT Interface** - Direct chat with OpenAI's ChatGPT
 - **Celebrity Chat** - Chat with AI personalities
-
-### ✔ Optional Features (Choose 2+)
-
-- Language Translator
-- Voice ChatGPT
-- Movie/Book Recommendations
-- Vocabulary Trainer
-- Image Recognition
-- Resume Assistant
-
+- **Python Quiz** - Test Your knowledge of Python
+- **Word Scramble** - Can You unscramble it?
 ---
 
 ![random.jpg](src/resources/images/random.jpg)
@@ -81,6 +73,8 @@ Available commands:
 - `/random` - Get a random fact
 - `/gpt` - Chat with ChatGPT
 - `/talk` - Chat with a celebrity personality
+- `/quiz` - Test your knowledge
+- `/english` - Unscramble the word
 
 ![gpt.jpg](src/resources/images/gpt.jpg)
 
@@ -89,7 +83,7 @@ Available commands:
 ### ✔ Project Structure
 
 ```
-open_ai_telegram_bot
+TelegramHub
 ├── .env.example         # Example environment variables
 ├── .gitignore           # Git ignore file
 ├── README.md            # This file
@@ -97,8 +91,14 @@ open_ai_telegram_bot
 └── src/
     ├── bot.py           # Main bot application
     ├── config.py        # Configuration settings
+    ├── constants.py     # Constants
+    ├── en_words.py      # List with words for scramble game
+    ├── english.py       # Scramble game logic
     ├── gpt.py           # GPT integration module
     ├── handlers.py      # Bot command handlers
+    ├── quiz.py          # Quiz game logic
+    ├── quiz_data.py     # List of dict with data for quiz
+    ├── talk_data.py     # hello world
     ├── utils.py         # Utility functions
     └── resources/       # Resource files
         ├── images/      # Image assets for the bot
